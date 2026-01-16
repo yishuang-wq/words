@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼字機資料轉檔工廠 V2.0 (智慧例句版)</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .step { margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-left: 5px solid #3498db; border-radius: 4px; }
+        h3 { margin-top: 0; color: #2980b9; }
+        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
+        button { background: #27ae60; color: white; border: none; padding: 10px 20px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #219150; }
+        .copy-hint { color: #e67e22; font-weight: bold; margin-top: 10px; display: none; }
+        .preview-box { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏭 拼字機資料轉檔工廠 V2.0</h1>
+    <p style="text-align:center; color:#666;">智慧篩選完整例句 -> 拼字機格式</p>
+
+    <div class="step">
+        <h3>步驟 1：貼上您的原始資料</h3>
+        <p>請將包含多個例句的原始資料（如 Excel 表格內容）全部貼在下面：</p>
+        <textarea id="raw-input" placeholder="例如：
+travel 旅行 travel to Japan / He likes to travel.
+..."></textarea>
+        <button onclick="generateCommand()">🧙‍♂️ 產生 AI 轉換指令</button>
+    </div>
+
+    <div class="step" id="step2" style="display:none;">
+        <h3>步驟 2：複製指令給 AI</h3>
+        <p>指令已生成！(已包含例句篩選邏輯)</p>
+        <textarea id="ai-prompt" readonly></textarea>
+        <button onclick="copyPrompt()">📋 複製指令</button>
+        <span class="copy-hint" id="copy-msg">已複製！請去 ChatGPT 貼上。</span>
+        <div style="margin-top:10px;">
+            <a href="https://chat.openai.com/" target="_blank" style="color:#3498db; text-decoration:none;">👉 前往 ChatGPT</a>
+        </div>
+    </div>
+
+    <div class="step">
+        <h3>步驟 3：取得結果</h3>
+        <p>AI 會幫您挑出最完整的句子，整理成 <code>travel=trav-el=旅遊=He likes to travel.</code></p>
+        <p>請將結果貼回 **拼字學習機** 的「⚙️ 設定」即可。</p>
+    </div>
+</div>
+
+<script>
+    function generateCommand() {
+        const rawText = document.getElementById('raw-input').value.trim();
+        if (!rawText) return alert("請先貼上您的單字資料！");
+
+        const prompt = `
+你是專業的英語教材編輯。請幫我將以下原始資料整理成「拼字學習機」專用的格式。
+
+目標格式：
+單字=音節=中文=例句
+(例如：apple=ap-ple=蘋果=I eat an apple every day.)
+
+處理規則：
+1. 【單字】：提取英文單字。
+2. 【音節】：將單字拆解為音節，用 "-" 分隔 (如 trav-el)。
+3. 【中文】：提取對應中文意思。
+4. 【例句篩選邏輯】(重要！)：
+   - 原始資料中可能包含多個例句或片語 (例句1, 例句2...)。
+   - 請優先檢查【例句 1】。
+   - **判定標準**：必須是「完整的句子」(有主詞、動詞，句意完整)。
+   - **篩選**：如果【例句 1】只是片語 (如 "travel to") 或不完整，請自動檢查【例句 2】或【例句 3】，選出最適合學習的一個「完整句子」。
+   - **造句**：如果所有提供的例句都不是完整句子，請你直接造一個適合國中程度的簡單正確例句 (禁止使用 "This is a ..." 句型)。
+
+5. 輸出要求：
+   - 每一行一筆資料。
+   - 不要輸出 Markdown 表格，直接輸出純文字。
+   - 不要任何額外說明。
+
+以下是原始資料：
+${rawText}
+`;
+        document.getElementById('ai-prompt').value = prompt;
+        document.getElementById('step2').style.display = 'block';
+        document.getElementById('step2').scrollIntoView({behavior: 'smooth'});
+    }
+
+    function copyPrompt() {
+        const copyText = document.getElementById("ai-prompt");
+        copyText.select();
+        document.execCommand("copy");
+        document.getElementById('copy-msg').style.display = 'inline';
+    }
+</script>
+
+</body>
+</html>
