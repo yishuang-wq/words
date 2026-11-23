@@ -3,83 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>拼字機資料工廠 V3.0 (字根偵探版)</title>
+    <title>🏭 資料工廠 V4.0 (含字根＋動詞三態)</title>
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; background: #e8f5e9; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #2e7d32; text-align: center; }
-        .step { margin-bottom: 25px; padding: 15px; background: #fffde7; border-left: 5px solid #fbc02d; border-radius: 4px; }
-        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
-        button { background: #2e7d32; color: white; border: none; padding: 10px 20px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #1b5e20; }
-        .copy-hint { color: #e65100; font-weight: bold; margin-top: 10px; display: none; }
+        body {
+            font-family: "Microsoft JhengHei", "Segoe UI", sans-serif;
+            background-color: #f4f9f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 750px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1b5e20;
+            margin: 0 0 8px 0;
+            font-size: 1.8rem;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .card {
+            background: #fffde7;
+            border-left: 6px solid #fbc02d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        }
+        .step-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #37474f;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 12px;
+            border: 1px solid #bdbdbd;
+            border-radius: 6px;
+            font-family: monospace, "Microsoft JhengHei";
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            resize: vertical;
+            background: #ffffff;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+        .btn-row {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+        button:active {
+            transform: scale(0.97);
+        }
+        .chatgpt-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #e65100;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        .chatgpt-link:hover {
+            text-decoration: underline;
+        }
+        .example-box {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.7;
+        }
+        .example-box code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            color: #2e7d32;
+            font-family: monospace;
+        }
+        .toast {
+            color: #2e7d32;
+            font-weight: bold;
+            font-size: 0.95rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .toast.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏭 資料工廠 V3.0 (含字根)</h1>
-    <p style="text-align:center; color:#666;">自動分析字根字首 -> 拼字機格式</p>
+    <header>
+        <h1>🏭 資料工廠 V4.0 (含字根＋動詞三態)</h1>
+        <div class="subtitle">自動分析字根字首與動詞三態 ➔ 拼字機 V8.4 專用格式</div>
+    </header>
 
-    <div class="step">
-        <h3>步驟 1：貼上原始資料</h3>
-        <textarea id="raw-input" placeholder="例如：
-attract 吸引
-predict 預測"></textarea>
-        <button onclick="generateCommand()">🧙‍♂️ 產生 AI 指令</button>
-    </div>
-
-    <div class="step" id="step2" style="display:none;">
-        <h3>步驟 2：複製指令給 AI</h3>
-        <textarea id="ai-prompt" readonly></textarea>
-        <button onclick="copyPrompt()">📋 複製指令</button>
-        <span class="copy-hint" id="copy-msg">已複製！請去 ChatGPT 貼上。</span>
-        <div style="margin-top:10px;">
-            <a href="https://chat.openai.com/" target="_blank" style="color:#2e7d32; text-decoration:none;">👉 前往 ChatGPT</a>
+    <div class="card">
+        <div class="step-title">步驟 1：貼上原始資料</div>
+        <textarea id="raw-input" placeholder="請貼上課本單字表、講義文字或任何原始單字資料..."></textarea>
+        <div class="btn-row">
+            <button onclick="generatePrompt()">🧙‍♂️ 產生 AI 指令</button>
         </div>
     </div>
 
-    <div class="step">
-        <h3>步驟 3：取得結果</h3>
-        <p>AI 會回傳格式：<code>單字=音節=中文=例句=字根解析</code></p>
-        <p>範例：<code>predict=pre-dict=預測=I can predict the weather.=pre(預先)+dict(說)</code></p>
+    <div class="card">
+        <div class="step-title">步驟 2：複製指令給 AI</div>
+        <textarea id="prompt-output" readonly placeholder="點擊上方按鈕後，這裡會自動產生給 ChatGPT 的指令..."></textarea>
+        <div class="btn-row">
+            <button onclick="copyPrompt()">📋 複製指令</button>
+            <span id="copy-toast" class="toast">✅ 已複製到剪貼簿！</span>
+        </div>
+        <a href="https://chatgpt.com/" target="_blank" class="chatgpt-link">👉 前往 ChatGPT</a>
+    </div>
+
+    <div class="card">
+        <div class="step-title">步驟 3：取得結果並貼入 Google 試算表</div>
+        <div class="example-box">
+            AI 會回傳純文字格式，直接複製貼到 Google 試算表的 <b>A 欄</b>即可：<br>
+            • <b>動詞（6 欄）</b>：<code>predict=pre-dict=預測=I can predict the weather.=pre(預先)+dict(說)=predict, predicted, predicted</code><br>
+            • <b>非動詞（5 欄）</b>：<code>cloud=cloud=雲端=The data is saved in the cloud.=無</code>
+        </div>
     </div>
 </div>
 
 <script>
-    function generateCommand() {
-        const rawText = document.getElementById('raw-input').value.trim();
-        if (!rawText) return alert("請先貼上資料！");
+    function generatePrompt() {
+        const raw = document.getElementById('raw-input').value.trim();
+        if (!raw) {
+            alert("請先在步驟 1 貼上原始單字資料喔！");
+            return;
+        }
 
-        const prompt = `
-你是英語教學專家。請將以下單字資料整理成「拼字學習機」專用格式。
+        const prompt = `你是英語教學專家。請將以下單字資料整理成「拼字學習機 V8.4」專用格式。
 
 目標格式：
-單字=音節=中文=例句=字根解析
-(注意：最後多了一個「字根解析」欄位)
+• 動詞（含可當動詞用的字）：單字=音節=中文=例句=字根解析=原形, 過去式, 過去分詞
+• 非動詞（名詞、形容詞等）：單字=音節=中文=例句=字根解析
 
 處理規則：
-1. 【單字/音節/中文】：照常處理，音節用 "-" 分隔。
-2. 【例句】：優先使用原文例句，若無則造一個簡單句。
-3. 【字根解析】(重點)：
-   - 請分析該單字的字根、字首、字尾。
-   - 格式範例： "pre(前) + dict(說) -> 預先說出"
-   - 用語請簡潔，適合國中生理解。
-   - 如果是簡單單字無明顯字根(如 cat, dog)，請填寫 "無" 或簡單關聯記憶法。
+1. 請直接輸出純文字，每一行一個單字，不要加編號、不要加標題、不要加 Markdown 程式碼框（\`\`\`）。
+2. 音節請用半形減號「-」隔開（單音節字直接寫原字）。
+3. 中文意思請簡潔明瞭，不要出現「=」符號。
+4. 例句請簡短自然；若原始資料已有例句請優先沿用。
+5. 字根解析請簡短說明字根字首幫助記憶；若無明顯字根請填「無」。
+6. 第 6 欄（動詞三態）：只要該字是動詞（或包含 v. 詞性），請務必在最後加上「=原形, 過去式, 過去分詞」（例如：=eat, ate, eaten 或 =upload, uploaded, uploaded）；若不是動詞，則不要加第 6 欄。
 
-以下是原始資料：
-${rawText}
-`;
-        document.getElementById('ai-prompt').value = prompt;
-        document.getElementById('step2').style.display = 'block';
-        document.getElementById('step2').scrollIntoView({behavior: 'smooth'});
+範例輸出：
+predict=pre-dict=預測=I can predict the weather.=pre(預先)+dict(說)=predict, predicted, predicted
+cloud=cloud=雲端=The data is saved in the cloud.=無
+
+以下是原始單字資料：
+${raw}`;
+
+        document.getElementById('prompt-output').value = prompt;
     }
 
     function copyPrompt() {
-        const t = document.getElementById("ai-prompt");
-        t.select(); document.execCommand("copy");
-        document.getElementById('copy-msg').style.display = 'inline';
+        const output = document.getElementById('prompt-output');
+        if (!output.value.trim()) {
+            alert("請先按「產生 AI 指令」喔！");
+            return;
+        }
+        output.select();
+        navigator.clipboard.writeText(output.value).then(() => {
+            const toast = document.getElementById('copy-toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        });
     }
 </script>
+
 </body>
 </html>
